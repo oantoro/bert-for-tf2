@@ -17,7 +17,7 @@ class Layer(pf.Layer):
         initializer_range = 0.02
 
     def create_initializer(self):
-        return tf.keras.initializers.TruncatedNormal(stddev=self.params.initializer_range)
+        return tf.keras.initializers.TruncatedNormal(stddev=self.params['initializer_range'])
 
     @staticmethod
     def get_activation(activation_string):

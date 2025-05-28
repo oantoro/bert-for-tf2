@@ -60,14 +60,14 @@ class BertModelLayer(Layer):
         else:
             input_ids_shape = input_shape
 
-        output_shape = list(input_ids_shape) + [self.params.hidden_size]
+        output_shape = list(input_ids_shape) + [self.params['hidden_size']]
         return output_shape
 
     def apply_adapter_freeze(self):
         """ Should be called once the model has been built to freeze
         all bet the adapter and layer normalization layers in BERT.
         """
-        if self.params.adapter_size is not None:
+        if self.params['adapter_size'] is not None:
             def freeze_selector(layer):
                 return layer.name not in ["adapter-up", "adapter-down", "LayerNorm", "extra_word_embeddings"]
             pf.utils.freeze_leaf_layers(self, freeze_selector)

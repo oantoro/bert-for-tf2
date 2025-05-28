@@ -41,21 +41,21 @@ class ProjectionLayer(Layer):
         self.input_spec = [keras.layers.InputSpec(shape=out_shape),
                            keras.layers.InputSpec(shape=residual_shape)]
 
-        self.dense = keras.layers.Dense(units=self.params.hidden_size,
+        self.dense = keras.layers.Dense(units=self.params['hidden_size'],
                                         kernel_initializer=self.create_initializer(),
                                         name="dense")
-        self.dropout    = keras.layers.Dropout(rate=self.params.hidden_dropout)
+        self.dropout    = keras.layers.Dropout(rate=self.params['hidden_dropout'])
         self.layer_norm = LayerNormalization(name="LayerNorm")
 
-        if self.params.adapter_size is not None:
-            self.adapter_down = keras.layers.Dense(units=self.params.adapter_size,
+        if self.params['adapter_size'] is not None:
+            self.adapter_down = keras.layers.Dense(units=self.params['adapter_size'],
                                                    kernel_initializer=tf.keras.initializers.TruncatedNormal(
-                                                       stddev=self.params.adapter_init_scale),
-                                                   activation=self.get_activation(self.params.adapter_activation),
+                                                       stddev=self.params['adapter_init_scale']),
+                                                   activation=self.get_activation(self.params['adapter_activation']),
                                                    name="adapter-down")
-            self.adapter_up   = keras.layers.Dense(units=self.params.hidden_size,
+            self.adapter_up   = keras.layers.Dense(units=self.params['hidden_size'],
                                                    kernel_initializer=tf.keras.initializers.TruncatedNormal(
-                                                       stddev=self.params.adapter_init_scale),
+                                                       stddev=self.params['adapter_init_scale']),
                                                    name="adapter-up")
 
         super(ProjectionLayer, self).build(input_shape)
@@ -159,8 +159,8 @@ class SingleTransformerEncoderLayer(Layer):
         )
         self.intermediate_layer = keras.layers.Dense(
             name="intermediate",
-            units=self.params.intermediate_size,
-            activation=self.get_activation(self.params.intermediate_activation),
+            units=self.params['intermediate_size'],
+            activation=self.get_activation(self.params['intermediate_activation']),
             kernel_initializer=self.create_initializer()
         )
         self.output_projector = ProjectionLayer.from_params(
@@ -209,12 +209,12 @@ class TransformerEncoderLayer(Layer):
         self.input_spec = keras.layers.InputSpec(shape=input_shape)
 
         # create all transformer encoder sub-layers
-        if self.params.shared_layer:
+        if self.params['shared_layer']:
             # ALBERT: share params
             self.shared_layer = SingleTransformerEncoderLayer.from_params(self.params, name="layer_shared")
         else:
             # BERT
-            for layer_ndx in range(self.params.num_layers):
+            for layer_ndx in range(self.params['num_layers']):
                 encoder_layer = SingleTransformerEncoderLayer.from_params(
                     self.params,
                     name="layer_{}".format(layer_ndx),
@@ -227,19 +227,19 @@ class TransformerEncoderLayer(Layer):
         layer_output = inputs
 
         layer_outputs = []
-        for layer_ndx in range(self.params.num_layers):
+        for layer_ndx in range(self.params['num_layers']):
             encoder_layer = self.encoder_layers[layer_ndx] if self.encoder_layers else self.shared_layer
             layer_input = layer_output
 
             layer_output = encoder_layer(layer_input, mask=mask, training=training)
             layer_outputs.append(layer_output)
 
-        if self.params.out_layer_ndxs is None:
+        if self.params['out_layer_ndxs'] is None:
             # return the final layer only
             final_output = layer_output
         else:
             final_output = []
-            for ndx in self.params.out_layer_ndxs:
+            for ndx in self.params['out_layer_ndxs']:
                 final_output.append(layer_outputs[ndx])
             final_output = tuple(final_output)
 
