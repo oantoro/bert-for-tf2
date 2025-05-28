@@ -24,7 +24,7 @@ class BertModelLayer(Layer):
     """
     class Params(BertEmbeddingsLayer.Params,
                  TransformerEncoderLayer.Params):
-        pass
+        name = "bert"
 
     # noinspection PyUnusedLocal
     def _construct(self, **kwargs):
